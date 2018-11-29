@@ -39,6 +39,7 @@ type direction =
   | Down
   | Left
   | Right;
+
 let getCharPos = c => c.x + 8 * c.y;
 
 let getNewCood = (coord, direction) =>

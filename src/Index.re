@@ -1,1 +1,1 @@
-ReactDOMRe.renderToElementWithId(<Board />, "index1");
+ReactDOMRe.renderToElementWithId(<BoardGUI />, "index1");
