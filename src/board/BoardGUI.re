@@ -1,15 +1,7 @@
-let makeCells = n => {
-  let rec aux = (acc, x) =>
-    if (x < 0) {
-      acc;
-    } else {
-      aux([x, ...acc], x - 1);
-    };
-  aux([], n - 1);
-};
+open Board;
 
 let getCells = characterPos =>
-  Belt.List.map(makeCells(64), v =>
+  Belt.List.map(makeCells(default_edge * default_edge), v =>
     if (v == characterPos) {
       <Cell key={string_of_int(v)}> <Character key="1" name="Me" /> </Cell>;
     } else {
@@ -22,53 +14,15 @@ let getGridTemplateColumns = (n, size) => Js.String.repeat(n, size ++ " ");
 let boardStyle =
   ReactDOMRe.Style.make(
     ~display="grid",
-    ~gridTemplateColumns=getGridTemplateColumns(8, "100px"),
+    ~gridTemplateColumns=getGridTemplateColumns(default_edge, "90px"),
     ~gridGap="10px",
     ~backgroundColor="#000000",
     ~color="#444444",
+    ~padding="10px",
     (),
   );
 
-type coord = {
-  x: int,
-  y: int,
-};
-
-type direction =
-  | Up
-  | Down
-  | Left
-  | Right;
-
-let getCharPos = c => c.x + 8 * c.y;
-
-let getNewCood = (coord, direction) =>
-  switch (direction) {
-  | Up =>
-    if (coord.y == 0) {
-      coord;
-    } else {
-      {...coord, y: coord.y - 1};
-    }
-  | Down =>
-    if (coord.y == 7) {
-      coord;
-    } else {
-      {...coord, y: coord.y + 1};
-    }
-  | Left =>
-    if (coord.x == 0) {
-      coord;
-    } else {
-      {...coord, x: coord.x - 1};
-    }
-  | Right =>
-    if (coord.x == 7) {
-      coord;
-    } else {
-      {...coord, x: coord.x + 1};
-    }
-  };
+let getCharPos = c => c.x + default_edge * c.y;
 
 type state = {currenCoord: coord};
 

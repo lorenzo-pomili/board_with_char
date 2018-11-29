@@ -5,6 +5,8 @@ let cellStyle =
     ~borderRadius="5px",
     ~padding="20px",
     ~fontSize="150%",
+    ~width="50px",
+    ~height="50px",
     (),
   );
 let component = ReasonReact.statelessComponent("Cell");
