@@ -1,20 +1,11 @@
 open Board;
 
-let getCells = characterPos =>
-  Belt.List.map(makeCells(default_edge * default_edge), v =>
-    if (v == characterPos) {
-      <Cell key={string_of_int(v)}> <Character key="1" name="Me" /> </Cell>;
-    } else {
-      <Cell key={string_of_int(v)} />;
-    }
-  );
-
 let getGridTemplateColumns = (n, size) => Js.String.repeat(n, size ++ " ");
 
 let boardStyle =
   ReactDOMRe.Style.make(
     ~display="grid",
-    ~gridTemplateColumns=getGridTemplateColumns(default_edge, "90px"),
+    ~gridTemplateColumns=getGridTemplateColumns(default_edge + 1, "90px"),
     ~gridGap="10px",
     ~backgroundColor="#000000",
     ~color="#444444",
@@ -24,7 +15,7 @@ let boardStyle =
 
 let getCharPos = c => c.x + default_edge * c.y;
 
-type state = {currenCoord: coord};
+type state = {character};
 
 type action =
   | ChangeCoord(direction);
@@ -40,26 +31,39 @@ let moveOnKeyDown = (send, e) =>
   | _ => ()
   };
 
+let renderBoard = board =>
+  Belt.List.mapWithIndex(board, (i, row) =>
+    <BoardRowGUI key={string_of_int(i)} row />
+  );
+
+let board = makeBoard(default_edge);
+
+let char1 = getNewCharacter("Me", {x: 0, y: 0});
+
+let boardWithCharacter = getBoardWithCharacter(board, char1);
+
 let component = ReasonReact.reducerComponent("Board");
 
 let make = _ => {
   ...component,
-  initialState: () => {
-    currenCoord: {
-      x: 0,
-      y: 0,
-    },
-  },
+  initialState: () => {character: getNewCharacter("Me", {x: 0, y: 0})},
   reducer: (action, state) =>
     switch (action) {
     | ChangeCoord(d) =>
-      ReasonReact.Update({currenCoord: getNewCood(state.currenCoord, d)})
+      ReasonReact.Update({
+        character: {
+          ...state.character,
+          coord: getNewCood(state.character.coord, d),
+        },
+      })
     },
   render: ({state, send}) =>
     <div style=boardStyle tabIndex=0 onKeyDown={e => moveOnKeyDown(send, e)}>
       {
         ReasonReact.array(
-          Array.of_list(getCells(getCharPos(state.currenCoord))),
+          Array.of_list(
+            renderBoard(getBoardWithCharacter(board, state.character)),
+          ),
         )
       }
     </div>,
