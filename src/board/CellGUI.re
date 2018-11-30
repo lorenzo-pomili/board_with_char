@@ -28,10 +28,10 @@ let getKey = c =>
 
 let component = ReasonReact.statelessComponent("Cell");
 
-let make = (~cell, children) => {
+let make = (~cell, ~onClick, children) => {
   ...component,
   render: _ =>
-    <div key={getKey(cell)} style=cellStyle>
+    <div key={getKey(cell)} onClick={_e => onClick(cell)} style=cellStyle>
       <div style=debugCoordStyle>
         <span>
           {ReasonReact.string("y: " ++ string_of_int(cell.coord.y))}

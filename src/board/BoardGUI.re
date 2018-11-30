@@ -18,6 +18,7 @@ let getCharPos = c => c.x + default_edge * c.y;
 type state = {character};
 
 type action =
+  | MoveTo(coord)
   | ChangeCoord(direction);
 
 let move = (send, d) => send(ChangeCoord(d));
@@ -31,9 +32,9 @@ let moveOnKeyDown = (send, e) =>
   | _ => ()
   };
 
-let renderBoard = board =>
+let renderBoard = (board, moveTo) =>
   Belt.List.mapWithIndex(board, (i, row) =>
-    <BoardRowGUI key={string_of_int(i)} row />
+    <BoardRowGUI key={string_of_int(i)} onCellClick=moveTo row />
   );
 
 let board = makeBoard(default_edge);
@@ -41,6 +42,8 @@ let board = makeBoard(default_edge);
 let char1 = getNewCharacter("Me", {x: 0, y: 0});
 
 let boardWithCharacter = getBoardWithCharacter(board, char1);
+
+let moveTo = (send, cell) => send(MoveTo(cell.coord));
 
 let component = ReasonReact.reducerComponent("Board");
 
@@ -56,13 +59,23 @@ let make = _ => {
           coord: getNewCood(state.character.coord, d),
         },
       })
+    | MoveTo(coord) =>
+      ReasonReact.Update({
+        character: {
+          ...state.character,
+          coord,
+        },
+      })
     },
   render: ({state, send}) =>
     <div style=boardStyle tabIndex=0 onKeyDown={e => moveOnKeyDown(send, e)}>
       {
         ReasonReact.array(
           Array.of_list(
-            renderBoard(getBoardWithCharacter(board, state.character)),
+            renderBoard(
+              getBoardWithCharacter(board, state.character),
+              moveTo(send),
+            ),
           ),
         )
       }
