@@ -5,9 +5,15 @@ type coord = {
   y: int,
 };
 
+type direction =
+  | Up
+  | Down
+  | Left
+  | Right;
+
 type pathEl = {
   coord,
-  direction: string,
+  direction,
 };
 
 type path = list(pathEl);
@@ -29,12 +35,6 @@ type cell = {
 type row = list(cell);
 
 type board = list(row);
-
-type direction =
-  | Up
-  | Down
-  | Left
-  | Right;
 
 let getElementCoord = e =>
   switch (e) {
@@ -127,7 +127,7 @@ let pathFromXY = (x, y) => {
     x,
     y,
   },
-  direction: "Path",
+  direction: Left,
 };
 
 let getXPath = (c1, c2) => {
