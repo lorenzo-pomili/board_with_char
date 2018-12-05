@@ -5,14 +5,25 @@ type coord = {
   y: int,
 };
 
+type pathEl = {
+  coord,
+  direction: string,
+};
+
+type path = list(pathEl);
+
 type character = {
   name: string,
   coord,
 };
 
+type boardElement =
+  | Character(character)
+  | Path(pathEl);
+
 type cell = {
   coord,
-  character: option(character),
+  element: option(boardElement),
 };
 
 type row = list(cell);
@@ -24,6 +35,12 @@ type direction =
   | Down
   | Left
   | Right;
+
+let getElementCoord = e =>
+  switch (e) {
+  | Character(c) => c.coord
+  | Path(p) => p.coord
+  };
 
 let (<=>) = (c1, c2) => c1.x == c2.x && c1.y == c2.y;
 
@@ -62,7 +79,7 @@ let getC = (x, y) => {
     x,
     y,
   },
-  character: None,
+  element: None,
 };
 
 let makeRow = (edge, n) => {
@@ -85,13 +102,79 @@ let makeBoard = edge => {
   aux(edge, []);
 };
 
-let getBoardWithCharacter = (board: board, character: character) =>
+let getBoardWithElement = (board: board, element: boardElement) =>
   Belt.List.map(board, row =>
     Belt.List.map(row, c =>
-      if (c.coord <=> character.coord) {
-        {...c, character: Some(character)};
+      if (c.coord <=> getElementCoord(element)) {
+        {...c, element: Some(element)};
       } else {
         c;
       }
     )
   );
+
+let getBoardWithElements = (board: board, elements: list(boardElement)) => {
+  let rec aux = (elements, acc) =>
+    switch (elements) {
+    | [] => acc
+    | [he, ...re] => aux(re, getBoardWithElement(acc, he))
+    };
+  aux(elements, board);
+};
+
+let pathFromXY = (x, y) => {
+  coord: {
+    x,
+    y,
+  },
+  direction: "Path",
+};
+
+let getXPath = (c1, c2) => {
+  let rec aux = (x1, x2, acc) =>
+    if (x1 == x2) {
+      acc;
+    } else if (x1 < x2) {
+      let nextX = x1 + 1;
+      aux(nextX, x2, acc @ [pathFromXY(nextX, c1.y)]);
+    } else {
+      let nextX = x1 - 1;
+      aux(nextX, x2, acc @ [pathFromXY(nextX, c1.y)]);
+    };
+  aux(c1.x, c2.x, []);
+};
+
+let getYPath = (c1, c2) => {
+  let rec aux = (y1, y2, acc) =>
+    if (y1 == y2) {
+      acc;
+    } else if (y1 < y2) {
+      let nextY = y1 + 1;
+      aux(nextY, y2, acc @ [pathFromXY(c1.x, nextY)]);
+    } else {
+      let nextY = y1 - 1;
+      aux(nextY, y2, acc @ [pathFromXY(c1.x, nextY)]);
+    };
+  aux(c1.y, c2.y, []);
+};
+
+let findPath = (c1: coord, c2: coord) => {
+  let rec aux = (start, stop, acc) =>
+    if (start <=> stop) {
+      acc;
+    } else if (start.x != stop.x) {
+      aux({...start, x: stop.x}, stop, acc @ getXPath(start, stop));
+    } else {
+      aux({...start, y: stop.y}, stop, acc @ getYPath(start, stop));
+    };
+  aux(c1, c2, []);
+};
+
+let pathToBoardElements = path => {
+  let rec aux = (p, acc) =>
+    switch (p) {
+    | [] => acc
+    | [ph, ...pr] => aux(pr, [Path(ph), ...acc])
+    };
+  aux(path, []);
+};

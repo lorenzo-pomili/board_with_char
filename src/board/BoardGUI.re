@@ -15,10 +15,14 @@ let boardStyle =
 
 let getCharPos = c => c.x + default_edge * c.y;
 
-type state = {character};
+type state = {
+  character,
+  currentPath: option(path),
+};
 
 type action =
   | MoveTo(coord)
+  | SetPath(coord, coord)
   | ChangeCoord(direction);
 
 let move = (send, d) => send(ChangeCoord(d));
@@ -32,28 +36,37 @@ let moveOnKeyDown = (send, e) =>
   | _ => ()
   };
 
-let renderBoard = (board, moveTo) =>
+let renderBoard = (board, setPath) =>
   Belt.List.mapWithIndex(board, (i, row) =>
-    <BoardRowGUI key={string_of_int(i)} onCellClick=moveTo row />
+    <BoardRowGUI key={string_of_int(i)} onCellClick=setPath row />
   );
 
 let board = makeBoard(default_edge);
 
 let char1 = getNewCharacter("Me", {x: 0, y: 0});
 
-let boardWithCharacter = getBoardWithCharacter(board, char1);
+let boardWithCharacter = getBoardWithElement(board, Character(char1));
+
+/* let boardWithPath =  */
 
 let moveTo = (send, cell) => send(MoveTo(cell.coord));
+
+let setPath = (send, character: character, cell) =>
+  send(SetPath(character.coord, cell.coord));
 
 let component = ReasonReact.reducerComponent("Board");
 
 let make = _ => {
   ...component,
-  initialState: () => {character: getNewCharacter("Me", {x: 0, y: 0})},
+  initialState: () => {
+    character: getNewCharacter("Me", {x: 0, y: 0}),
+    currentPath: None,
+  },
   reducer: (action, state) =>
     switch (action) {
     | ChangeCoord(d) =>
       ReasonReact.Update({
+        ...state,
         character: {
           ...state.character,
           coord: getNewCood(state.character.coord, d),
@@ -61,11 +74,14 @@ let make = _ => {
       })
     | MoveTo(coord) =>
       ReasonReact.Update({
+        ...state,
         character: {
           ...state.character,
           coord,
         },
       })
+    | SetPath(c1, c2) =>
+      ReasonReact.Update({...state, currentPath: Some(findPath(c1, c2))})
     },
   render: ({state, send}) =>
     <div style=boardStyle tabIndex=0 onKeyDown={e => moveOnKeyDown(send, e)}>
@@ -73,8 +89,16 @@ let make = _ => {
         ReasonReact.array(
           Array.of_list(
             renderBoard(
-              getBoardWithCharacter(board, state.character),
-              moveTo(send),
+              getBoardWithElements(
+                board,
+                [
+                  Character(state.character),
+                  ...pathToBoardElements(
+                       Belt.Option.getWithDefault(state.currentPath, []),
+                     ),
+                ],
+              ),
+              setPath(send, state.character),
             ),
           ),
         )
