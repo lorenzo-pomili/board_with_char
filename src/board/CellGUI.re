@@ -13,6 +13,7 @@ let debugCoordStyle =
 
 let cellStyle =
   ReactDOMRe.Style.make(
+    ~cursor="pointer",
     ~backgroundColor="#ffffff",
     ~color="#000000",
     ~borderRadius="5px",
