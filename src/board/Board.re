@@ -122,12 +122,12 @@ let getBoardWithElements = (board: board, elements: list(boardElement)) => {
   aux(elements, board);
 };
 
-let pathFromXY = (x, y) => {
+let pathFromXY = (x, y, direction) => {
   coord: {
     x,
     y,
   },
-  direction: Left,
+  direction,
 };
 
 let getXPath = (c1, c2) => {
@@ -136,10 +136,10 @@ let getXPath = (c1, c2) => {
       acc;
     } else if (x1 < x2) {
       let nextX = x1 + 1;
-      aux(nextX, x2, acc @ [pathFromXY(nextX, c1.y)]);
+      aux(nextX, x2, acc @ [pathFromXY(nextX, c1.y, Right)]);
     } else {
       let nextX = x1 - 1;
-      aux(nextX, x2, acc @ [pathFromXY(nextX, c1.y)]);
+      aux(nextX, x2, acc @ [pathFromXY(nextX, c1.y, Left)]);
     };
   aux(c1.x, c2.x, []);
 };
@@ -150,10 +150,10 @@ let getYPath = (c1, c2) => {
       acc;
     } else if (y1 < y2) {
       let nextY = y1 + 1;
-      aux(nextY, y2, acc @ [pathFromXY(c1.x, nextY)]);
+      aux(nextY, y2, acc @ [pathFromXY(c1.x, nextY, Down)]);
     } else {
       let nextY = y1 - 1;
-      aux(nextY, y2, acc @ [pathFromXY(c1.x, nextY)]);
+      aux(nextY, y2, acc @ [pathFromXY(c1.x, nextY, Up)]);
     };
   aux(c1.y, c2.y, []);
 };
