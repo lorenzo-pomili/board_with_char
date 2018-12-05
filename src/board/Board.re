@@ -178,3 +178,9 @@ let pathToBoardElements = path => {
     };
   aux(path, []);
 };
+
+let coordIsPathArrival = (path: path, coord) =>
+  switch (Belt.List.get(path, Belt.List.length(path) - 1)) {
+  | None => true
+  | Some(p) => p.coord <=> coord
+  };

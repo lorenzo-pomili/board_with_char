@@ -47,12 +47,21 @@ let char1 = getNewCharacter("Me", {x: 0, y: 0});
 
 let boardWithCharacter = getBoardWithElement(board, Character(char1));
 
-/* let boardWithPath =  */
-
-let moveTo = (send, cell) => send(MoveTo(cell.coord));
+let moveToCell = (send, cell) => send(MoveTo(cell.coord));
 
 let setPath = (send, character: character, cell) =>
   send(SetPath(character.coord, cell.coord));
+
+let moveTo = (send, character: character, currentPath, cell) =>
+  switch (currentPath) {
+  | None => setPath(send, character, cell)
+  | Some(path) =>
+    if (coordIsPathArrival(path, cell.coord)) {
+      moveToCell(send, cell);
+    } else {
+      setPath(send, character, cell);
+    }
+  };
 
 let component = ReasonReact.reducerComponent("Board");
 
@@ -74,11 +83,11 @@ let make = _ => {
       })
     | MoveTo(coord) =>
       ReasonReact.Update({
-        ...state,
         character: {
           ...state.character,
           coord,
         },
+        currentPath: None,
       })
     | SetPath(c1, c2) =>
       ReasonReact.Update({...state, currentPath: Some(findPath(c1, c2))})
@@ -98,7 +107,7 @@ let make = _ => {
                      ),
                 ],
               ),
-              setPath(send, state.character),
+              moveTo(send, state.character, state.currentPath),
             ),
           ),
         )
