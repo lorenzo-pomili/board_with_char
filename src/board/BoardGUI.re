@@ -1,5 +1,7 @@
 open Board;
 
+let characterMoveDelay = 1000;
+
 let getGridTemplateColumns = (n, size) => Js.String.repeat(n, size ++ " ");
 
 let boardStyle =
@@ -52,12 +54,23 @@ let moveToCell = (send, cell) => send(MoveTo(cell.coord));
 let setPath = (send, character: character, cell) =>
   send(SetPath(character.coord, cell.coord));
 
+let moveViaPath = (send, path: Board.path) => {
+  let rec aux = (p: Board.path) =>
+    switch (p) {
+    | [] => ()
+    | [ph, ...pr] =>
+      send(MoveTo(ph.coord));
+      Js.Global.setTimeout(() => aux(pr), characterMoveDelay) |> ignore;
+    };
+  aux(path);
+};
+
 let moveTo = (send, character: character, currentPath, cell) =>
   switch (currentPath) {
   | None => setPath(send, character, cell)
   | Some(path) =>
     if (coordIsPathArrival(path, cell.coord)) {
-      moveToCell(send, cell);
+      moveViaPath(send, path);
     } else {
       setPath(send, character, cell);
     }
