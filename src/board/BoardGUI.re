@@ -47,8 +47,6 @@ let board = makeBoard(default_edge);
 
 let char1 = getNewCharacter("Me", {x: 0, y: 0});
 
-let boardWithCharacter = getBoardWithElement(board, Character(char1));
-
 let moveToCell = (send, cell) => send(MoveTo(cell.coord));
 
 let setPath = (send, character: character, cell) =>
