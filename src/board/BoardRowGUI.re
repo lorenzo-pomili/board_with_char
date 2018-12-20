@@ -6,7 +6,7 @@ let renderRow = (row, onCellClick) =>
       {switch (c.element) {
        | None => ReasonReact.null
        | Some(Character(character)) =>
-         <Character key="1" name={character.name} />
+         <Character moving={character.moving} key="1" name={character.name} />
        | Some(Path(path)) => <PathGUI key="1" direction={path.direction} />
        }}
     </CellGUI>

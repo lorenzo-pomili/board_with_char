@@ -23,7 +23,8 @@ type state = {
 };
 
 type action =
-  | MoveTo(coord)
+  | StopMove
+  | MoveTo(coord, direction)
   | SetPath(coord, coord)
   | ChangeCoord(direction);
 
@@ -47,17 +48,16 @@ let board = makeBoard(default_edge);
 
 let char1 = getNewCharacter("Me", {x: 0, y: 0});
 
-let moveToCell = (send, cell) => send(MoveTo(cell.coord));
-
 let setPath = (send, character: character, cell) =>
   send(SetPath(character.coord, cell.coord));
 
 let moveViaPath = (send, path: Board.path) => {
   let rec aux = (p: Board.path) =>
     switch (p) {
-    | [] => ()
+    | [] => send(StopMove)
     | [ph, ...pr] =>
-      send(MoveTo(ph.coord));
+      send(StopMove);
+      send(MoveTo(ph.coord, ph.direction));
       Js.Global.setTimeout(() => aux(pr), characterMoveDelay) |> ignore;
     };
   aux(path);
@@ -84,18 +84,34 @@ let make = _ => {
   },
   reducer: (action, state) =>
     switch (action) {
-    | ChangeCoord(d) =>
+    | StopMove =>
       ReasonReact.Update({
         ...state,
         character: {
           ...state.character,
-          coord: getNewCood(state.character.coord, d),
+          moving: None,
         },
       })
-    | MoveTo(coord) =>
+    | ChangeCoord(d) =>
+      ReasonReact.UpdateWithSideEffects(
+        {
+          ...state,
+          character: {
+            ...state.character,
+            coord: getNewCood(state.character.coord, d),
+            moving: Some(d),
+          },
+        },
+        (
+          ({send}) =>
+            Js.Global.setTimeout(() => send(StopMove), 250) |> ignore
+        ),
+      )
+    | MoveTo(coord, d) =>
       ReasonReact.Update({
         character: {
           ...state.character,
+          moving: Some(d),
           coord,
         },
         currentPath: None,

@@ -20,6 +20,7 @@ type path = list(pathEl);
 
 type character = {
   name: string,
+  moving: option(direction),
   coord,
 };
 
@@ -44,7 +45,7 @@ let getElementCoord = e =>
 
 let (<=>) = (c1, c2) => c1.x == c2.x && c1.y == c2.y;
 
-let getNewCharacter = (name, coord) => {name, coord};
+let getNewCharacter = (name, coord) => {name, coord, moving: None};
 
 let getNewCood = (coord, direction) =>
   switch (direction) {

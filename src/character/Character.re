@@ -1,6 +1,13 @@
 let component = ReasonReact.statelessComponent("Character");
 
-let make = (~name, _) => {
+let getCharStyle = moving =>
+  switch (moving) {
+  | None => ReactDOMRe.Style.make(~backgroundColor="", ())
+  | Some(_d) => ReactDOMRe.Style.make(~backgroundColor="red", ())
+  };
+
+let make = (~name, ~moving, _) => {
   ...component,
-  render: _ => ReasonReact.string(name),
+  render: _ =>
+    <span style={getCharStyle(moving)}> {ReasonReact.string(name)} </span>,
 };
